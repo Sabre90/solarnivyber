@@ -13,17 +13,17 @@
   </header>
 
   <main>
-    <section id="chat-section">
-      <textarea id="userInput" placeholder="Zadejte parametry domu..."></textarea>
-      <button onclick="sendToGPT()">📤 Odeslat</button>
-      <div id="chatOutput"></div>
+    <!-- Vstup pro výpočet -->
+    <section class="calculator">
+      <h2>Zadejte údaje pro výpočet</h2>
+      <textarea id="userInput" placeholder="Např. Dům 150 m2, 4 osoby, spotřeba 5 MWh/rok"></textarea>
+      <button onclick="sendToGPT()">📊 Spočítat návratnost</button>
+
+      <h3>Výsledek výpočtu</h3>
+      <pre id="result">Zatím nebyl proveden výpočet.</pre>
     </section>
 
-    <div class="export-buttons">
-      <button onclick="downloadTXT()">📄 Stáhnout TXT</button>
-      <button onclick="downloadCSV()">📊 Stáhnout CSV</button>
-    </div>
-
+    <!-- Kontakt -->
     <section class="contact">
       <h2>Chcete nezávazně kontaktovat specialistu?</h2>
       <form id="contactForm" onsubmit="sendForm(event)">
@@ -31,7 +31,7 @@
         <input type="text" id="phone" placeholder="Telefon (nepovinné)">
         <button type="submit">Odeslat</button>
       </form>
-      <div id="status"></div>
+      <p id="status"></p>
     </section>
   </main>
 
