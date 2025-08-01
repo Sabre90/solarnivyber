@@ -20,5 +20,6 @@
   },
   "homepage": "https://github.com/Sabre90/solarnivyber#readme",
   "dependencies": {
+    "node-fetch": "^2.6.9"
   }
 }
