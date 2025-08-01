@@ -1,26 +1,24 @@
-import fetch from "node-fetch";
+const fetch = require("node-fetch");
 
-export default async (req, context) => {
-  const { prompt } = await req.json();
+exports.handler = async function(event, context) {
+  const body = JSON.parse(event.body || "{}");
+  const prompt = body.prompt || "Hello";
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      messages: [
-        { role: "system", content: "Jsi expert na fotovoltaiku a návratnost investic." },
-        { role: "user", content: prompt }
-      ]
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }]
     })
   });
 
   const data = await response.json();
-  return new Response(JSON.stringify(data), {
-    status: 200,
-    headers: { "Content-Type": "application/json" }
-  });
+  return {
+    statusCode: 200,
+    body: JSON.stringify(data)
+  };
 };
