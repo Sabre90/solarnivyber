@@ -1,57 +1,110 @@
-// ====== 1️⃣ Výpočet přes GPT ======
-document.getElementById('calculateBtn').addEventListener('click', async () => {
-    const input = document.getElementById('userInput').value.trim();
-    const resultBox = document.getElementById('result');
-    
-    if (!input) {
-      resultBox.value = "❗ Zadejte nejprve vstup pro výpočet.";
+const GPT_ENDPOINT = '/.netlify/functions/calc';
+const SHEETS_ENDPOINT = '/.netlify/functions/submit';
+
+const chatBox = document.getElementById('chat');
+const chatForm = document.getElementById('chatForm');
+const userInput = document.getElementById('userInput');
+const suggestions = document.getElementById('suggestions');
+const resultField = document.getElementById('result');
+const contactForm = document.getElementById('contactForm');
+const statusDiv = document.getElementById('status');
+
+// Add message to chat
+function addMessage(text, type = 'bot') {
+  const msg = document.createElement('div');
+  msg.className = type === 'user' ? 'user-message' : 'bot-message';
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Show animated typing indicator
+function showTyping() {
+  const typing = document.createElement('div');
+  typing.className = 'bot-message typing-indicator';
+  typing.id = 'typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  chatBox.appendChild(typing);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Remove typing indicator
+function removeTyping() {
+  const typing = document.getElementById('typing');
+  if (typing) typing.remove();
+}
+
+// Handle sending user message to GPT
+chatForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const question = userInput.value.trim();
+  if (!question) return;
+
+  addMessage(question, 'user');
+  userInput.value = '';
+
+  showTyping();
+
+  try {
+    const res = await fetch(GPT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: question })
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    if (data.error) {
+      addMessage('Chyba při výpočtu: ' + (data.error.message || data.error), 'bot');
       return;
     }
-  
-    resultBox.value = "⏳ Probíhá výpočet...";
-  
-    try {
-      const response = await fetch('/.netlify/functions/calc', {
-        method: 'POST',
-        body: JSON.stringify({ input }),
-      });
-  
-      const data = await response.json();
-  
-      if (data.result) {
-        resultBox.value = data.result;
-      } else {
-        resultBox.value = "Chyba při výpočtu: " + (data.error || "Neznámá chyba");
-      }
-    } catch (err) {
-      resultBox.value = "Chyba při komunikaci se serverem: " + err.message;
-    }
-  });
-  
-  // ====== 2️⃣ Odeslání do Google Forms ======
-  document.getElementById('contactForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-  
-    const result = document.getElementById('result').value;
-    const email = document.getElementById('email').value;
-    const phone = document.getElementById('phone').value;
-  
-    // Tvůj Google Form URL (formResponse)
-    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSeZjNJC75-7QZP9eurHY63wPJADLQhtRmKykErmgzEVNjfrlQ/formResponse";
-  
-    const formData = new FormData();
-    formData.append('entry.400294580', result); // Vypocet
-    formData.append('entry.1456344775', email);  // Email
-    formData.append('entry.1786917849', phone);  // Telefon
-  
-    fetch(formURL, {
+
+    const answer = data.answer || 'Žádná odpověď';
+    addMessage(answer, 'bot');
+
+    // Pre-fill result field so user can send it to Sheets
+    resultField.value = answer;
+
+  } catch (err) {
+    removeTyping();
+    addMessage('Chyba při výpočtu: ' + err.message, 'bot');
+  }
+});
+
+// Handle suggested questions
+suggestions.addEventListener('click', (e) => {
+  if (e.target.tagName === 'LI') {
+    userInput.value = e.target.textContent;
+    chatForm.dispatchEvent(new Event('submit'));
+  }
+});
+
+// Handle sending contact form to Google Sheets
+contactForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const result = resultField.value.trim();
+
+  statusDiv.textContent = 'Odesílám...';
+
+  try {
+    const res = await fetch(SHEETS_ENDPOINT, {
       method: 'POST',
-      mode: 'no-cors',
-      body: formData
-    }).then(() => {
-      document.getElementById('status').innerText = "✅ Děkujeme! Specialista vás brzy kontaktuje.";
-      document.getElementById('contactForm').reset();
-    }).catch(() => {
-      document.getElementById('status').innerText = "⚠️ Nepodařilo se odeslat, zkuste znovu.";
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, phone, result })
     });
-  });
+
+    const data = await res.json();
+
+    if (data.success) {
+      statusDiv.textContent = '✅ Úspěšně odesláno!';
+      contactForm.reset();
+    } else {
+      statusDiv.textContent = '⚠️ Chyba: ' + (data.error || 'Neznámá chyba');
+    }
+  } catch (err) {
+    statusDiv.textContent = '⚠️ Chyba připojení: ' + err.message;
+  }
+});
