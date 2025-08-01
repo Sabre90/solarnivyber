@@ -1,49 +1,42 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solární Výběr</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Výpočet FVE</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f8f8; }
+    h1 { color: #333; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    textarea, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #status { margin-top: 10px; font-weight: bold; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Solární Výběr</h1>
-    <p>Chytrý výpočet návratnosti fotovoltaiky, baterie a tepelného čerpadla.</p>
-  </header>
+  <div class="container">
+    <h1>Výpočet FVE</h1>
 
-  <main>
-    <!-- Formulář pro vstupní údaje -->
-    <section>
-      <h2>Zadejte vstupní údaje</h2>
-      <form id="calcForm">
-        <input type="text" id="inputData" placeholder="Zadejte adresu, spotřebu..." required />
-        <button type="submit">Spočítat</button>
-      </form>
-    </section>
+    <label for="userInput">Zadejte údaje pro výpočet:</label>
+    <textarea id="userInput" placeholder="Např. Umístění, výkon, počet panelů..."></textarea>
+    <button id="calculateBtn">Spočítat</button>
 
-    <!-- Výsledek GPT -->
-    <section>
-      <h2>Výsledek výpočtu</h2>
-      <pre id="result">Zatím žádný výsledek...</pre>
-    </section>
+    <h3>Výsledek výpočtu</h3>
+    <textarea id="result" readonly placeholder="Výsledek se zobrazí zde..."></textarea>
 
-    <!-- Formulář pro kontakt -->
-    <section class="contact">
-      <h2>Chcete nezávazně kontaktovat specialistu?</h2>
-      <form id="contactForm">
-        <input type="text" id="manualResult" name="result" placeholder="Vložte výsledek výpočtu (volitelné)">
-        <input type="email" id="email" name="email" placeholder="Váš e-mail (nepovinné)">
-        <input type="text" id="phone" name="phone" placeholder="Telefon (nepovinné)">
-        <button type="submit">Odeslat</button>
-      </form>
-      <p id="status"></p>
-    </section>
-  </main>
+    <form id="contactForm">
+      <label for="email">Váš email:</label>
+      <input type="email" id="email" required>
 
-  <footer>
-    <p>© 2025 Solární Výběr – Vaše cesta k levnější energii</p>
-  </footer>
+      <label for="phone">Telefon:</label>
+      <input type="tel" id="phone" required>
+
+      <button type="submit">Odeslat specialistovi</button>
+    </form>
+
+    <p id="status"></p>
+  </div>
 
   <script src="script.js"></script>
 </body>
