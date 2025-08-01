@@ -5,7 +5,8 @@
   "type": "module",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo 'Static build - nothing to compile'"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,5 @@
   },
   "homepage": "https://github.com/Sabre90/solarnivyber#readme",
   "dependencies": {
-    "node-fetch": "^3.3.2"
   }
 }
