@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solární Výběr</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
@@ -13,22 +13,28 @@
   </header>
 
   <main>
-    <!-- Vstup pro výpočet -->
-    <section class="calculator">
-      <h2>Zadejte údaje pro výpočet</h2>
-      <textarea id="userInput" placeholder="Např. Dům 150 m2, 4 osoby, spotřeba 5 MWh/rok"></textarea>
-      <button onclick="sendToGPT()">📊 Spočítat návratnost</button>
-
-      <h3>Výsledek výpočtu</h3>
-      <pre id="result">Zatím nebyl proveden výpočet.</pre>
+    <!-- Formulář pro vstupní údaje -->
+    <section>
+      <h2>Zadejte vstupní údaje</h2>
+      <form id="calcForm">
+        <input type="text" id="inputData" placeholder="Zadejte adresu, spotřebu..." required />
+        <button type="submit">Spočítat</button>
+      </form>
     </section>
 
-    <!-- Kontakt -->
+    <!-- Výsledek GPT -->
+    <section>
+      <h2>Výsledek výpočtu</h2>
+      <pre id="result">Zatím žádný výsledek...</pre>
+    </section>
+
+    <!-- Formulář pro kontakt -->
     <section class="contact">
       <h2>Chcete nezávazně kontaktovat specialistu?</h2>
-      <form id="contactForm" onsubmit="sendForm(event)">
-        <input type="email" id="email" placeholder="Váš e-mail (nepovinné)">
-        <input type="text" id="phone" placeholder="Telefon (nepovinné)">
+      <form id="contactForm">
+        <input type="text" id="manualResult" name="result" placeholder="Vložte výsledek výpočtu (volitelné)">
+        <input type="email" id="email" name="email" placeholder="Váš e-mail (nepovinné)">
+        <input type="text" id="phone" name="phone" placeholder="Telefon (nepovinné)">
         <button type="submit">Odeslat</button>
       </form>
       <p id="status"></p>
