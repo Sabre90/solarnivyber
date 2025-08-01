@@ -3,40 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hypoteční kalkulátor GPT</title>
+  <title>FVE Chat Asistent</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="chat-container">
-    <aside class="sidebar">
-      <h2>Inspirace</h2>
-      <ul id="suggestions">
-        <li>Jakou hypotéku si mohu dovolit?</li>
-        <li>Kolik budu splácet při 5% úroku?</li>
-        <li>Jak dlouho budu splácet 3 miliony Kč?</li>
-      </ul>
-    </aside>
+  <div class="app-container">
+    <h1>⚡ FVE Chat Asistent</h1>
+    <p class="subtitle">Zeptejte se na fotovoltaiku a získejte rychlý výpočet</p>
 
-    <main class="chat-panel">
-      <div id="chat" class="chat-box">
-        <div class="bot-message">👋 Dobrý den! Zeptejte se mě na vaši hypotéku.</div>
-      </div>
+    <!-- Inspirace dotazů -->
+    <div class="examples">
+      <p>💡 Vyzkoušejte například:</p>
+      <button class="example-btn">Jak velkou FVE potřebuji pro dům s roční spotřebou 6 MWh?</button>
+      <button class="example-btn">Za jak dlouho se mi vrátí investice do 8 kWp?</button>
+      <button class="example-btn">Kolik panelů potřebuji na střechu 120 m²?</button>
+    </div>
 
-      <form id="chatForm" class="chat-input">
-        <input type="text" id="userInput" placeholder="Zadejte dotaz..." required>
-        <button type="submit">Odeslat</button>
-      </form>
+    <!-- Chatbox -->
+    <div id="chatBox" class="chat-box"></div>
 
+    <!-- Vstup uživatele -->
+    <div class="input-container">
+      <input type="text" id="userInput" placeholder="Zadejte dotaz k FVE..." />
+      <button id="sendBtn">Odeslat</button>
+    </div>
+
+    <!-- Formulář pro uložení kontaktu -->
+    <h2>📩 Nechte nám kontakt</h2>
+    <form id="contactForm">
+      <input type="email" id="email" placeholder="Váš e-mail" required>
+      <input type="tel" id="phone" placeholder="Telefon" required>
       <textarea id="result" placeholder="Výsledek výpočtu (volitelné)"></textarea>
-
-      <form id="contactForm" class="contact-form">
-        <input type="email" id="email" placeholder="Váš email" required>
-        <input type="tel" id="phone" placeholder="Váš telefon" required>
-        <button type="submit">Odeslat specialistovi</button>
-      </form>
-
-      <div id="status"></div>
-    </main>
+      <button type="submit">Odeslat</button>
+    </form>
+    <p id="status"></p>
   </div>
 
   <script src="script.js"></script>
