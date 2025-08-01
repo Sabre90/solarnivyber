@@ -1,0 +1,24 @@
+{
+  "name": "solarnivyber",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sabre90/solarnivyber.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sabre90/solarnivyber/issues"
+  },
+  "homepage": "https://github.com/Sabre90/solarnivyber#readme",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
