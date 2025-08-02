@@ -1,26 +1,46 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FVE & Tepelné Čerpadlo Kalkulátor</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="chat-container">
-    <header class="chat-header">
-      <h1>⚡ FVE & TČ Kalkulátor</h1>
-      <p>Výpočet návratnosti fotovoltaiky, baterií a tepelných čerpadel v ČR</p>
+  <div class="app-container">
+    <header>
+      <h1>FVE & Tepelné Čerpadlo Kalkulátor</h1>
+      <p>Odpovídáme pouze na témata fotovoltaiky, baterií a tepelných čerpadel v ČR.</p>
     </header>
 
-    <main class="chat-main" id="chat-box"></main>
+    <main>
+      <section class="chat-section">
+        <div id="chatWindow" class="chat-window"></div>
+        <div class="chat-input">
+          <input type="text" id="userInput" placeholder="Zadejte svůj dotaz..." />
+          <button id="sendBtn">Odeslat</button>
+        </div>
+      </section>
 
-    <footer class="chat-footer">
-      <input type="text" id="chat-input" placeholder="Zeptejte se na FVE, baterie a TČ...">
-      <button id="send-btn">➤</button>
-    </footer>
+      <section class="form-section">
+        <h2>Chci dostat detailní výpočet na e‑mail</h2>
+        <form id="contactForm">
+          <input type="text" id="name" placeholder="Jméno" required />
+          <input type="email" id="email" placeholder="E‑mail" required />
+          <input type="tel" id="phone" placeholder="Telefon" />
+          <textarea id="message" placeholder="Doplňující informace (volitelné)"></textarea>
+          <button type="submit">Odeslat</button>
+        </form>
+      </section>
+
+      <section class="export-section">
+        <h2>Export výsledků</h2>
+        <button id="exportCSV">Export do CSV</button>
+      </section>
+    </main>
   </div>
 
+  <script src="calc.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

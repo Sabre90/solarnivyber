@@ -1,135 +1,50 @@
-// =========================
-// UI Elements
-// =========================
-const chatBox = document.getElementById("chat-box");
-const input = document.getElementById("chat-input");
-const sendBtn = document.getElementById("send-btn");
-const starters = [
-  "Spočítej návratnost FVE s baterií a TČ pro rodinný dům.",
-  "Jaká je aktuální dotace na fotovoltaiku a baterii?",
-  "Kolik ušetřím ročně, když budu mít fotovoltaiku 5 kWp?",
-  "Chci zjistit, jestli se mi vyplatí fotovoltaika na domě v mém městě."
-];
+const chatWindow = document.getElementById("chatWindow");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+const contactForm = document.getElementById("contactForm");
+const exportCSV = document.getElementById("exportCSV");
 
-// Při načtení vložíme startovní návrhy do UI
-window.addEventListener("DOMContentLoaded", () => {
-  starters.forEach((s) => appendMessage(s, "starter"));
-});
-
-// =========================
-// Helpers
-// =========================
-function appendMessage(text, sender = "user") {
-  const div = document.createElement("div");
-  div.className = sender === "user" ? "msg user" : sender === "bot" ? "msg bot" : "msg starter";
-  div.textContent = text;
-  div.addEventListener("click", () => {
-    if (sender === "starter") {
-      input.value = text;
-      sendMessage();
-    }
-  });
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+function addMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.classList.add("chat-message", sender);
+  msg.innerText = text;
+  chatWindow.appendChild(msg);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-// =========================
-// API Calls
-// =========================
-
-// Volání GPT
-async function askGPT(prompt) {
-  appendMessage(prompt, "user");
-  appendMessage("⏳ Počkejte na odpověď...", "bot");
-
-  try {
-    const res = await fetch("/.netlify/functions/calc", {
-      method: "POST",
-      body: JSON.stringify({ action: "ask", data: { prompt } }),
-    });
-    const text = await res.text();
-    const lastBot = chatBox.querySelector(".msg.bot:last-child");
-    if (lastBot) lastBot.textContent = text;
-  } catch (err) {
-    const lastBot = chatBox.querySelector(".msg.bot:last-child");
-    if (lastBot) lastBot.textContent = "⚠️ Chyba při dotazu na GPT.";
-  }
-}
-
-// Výpočet FVE
-async function calculateFVE(spotreba, baterie, tc) {
-  appendMessage("📊 Počítám návratnost FVE...", "bot");
-
-  try {
-    const res = await fetch("/.netlify/functions/calc", {
-      method: "POST",
-      body: JSON.stringify({ action: "calculate", data: { spotreba, baterie, tc } }),
-    });
-    const result = await res.json();
-
-    appendMessage(
-      `✅ Doporučený výkon FVE: ${result.kWp} kWp
-🔋 Baterie: ${result.baterieKWh} kWh
-💰 Investice po dotacích: ${result.investice.toLocaleString()} Kč
-📉 Roční úspora: ${result.rocniUspora.toLocaleString()} Kč
-⏱ Návratnost: ${result.navratnost} let
-💶 Dotace NZÚ: ${result.dotace.toLocaleString()} Kč`,
-      "bot"
-    );
-  } catch (err) {
-    appendMessage("⚠️ Chyba při výpočtu návratnosti.", "bot");
-  }
-}
-
-// Web Search
-async function searchWeb(query) {
-  appendMessage(`🔎 Hledám na webu: "${query}"`, "user");
-  appendMessage("⏳ Vyhledávání...", "bot");
-
-  try {
-    const res = await fetch("/.netlify/functions/calc", {
-      method: "POST",
-      body: JSON.stringify({ action: "websearch", data: { query } }),
-    });
-    const links = await res.json();
-    const lastBot = chatBox.querySelector(".msg.bot:last-child");
-    if (lastBot) {
-      if (links.length === 0) {
-        lastBot.textContent = "Nenalezeny žádné výsledky.";
-      } else {
-        lastBot.innerHTML = "🌐 Nalezené odkazy:<br>" +
-          links
-            .map((l) => `<a href="${l.FirstURL}" target="_blank">${l.Text}</a>`)
-            .join("<br>");
-      }
-    }
-  } catch (err) {
-    const lastBot = chatBox.querySelector(".msg.bot:last-child");
-    if (lastBot) lastBot.textContent = "⚠️ Chyba při vyhledávání.";
-  }
-}
-
-// =========================
-// Sending messages
-// =========================
 async function sendMessage() {
-  const message = input.value.trim();
-  if (!message) return;
+  const text = userInput.value.trim();
+  if (!text) return;
+  addMessage("user", text);
+  userInput.value = "";
 
-  // Zjistíme, zda je to příkaz pro výpočet
-  if (message.toLowerCase().includes("spočítej") || message.toLowerCase().includes("návratnost")) {
-    // Defaultní demo: spotřeba 5000 kWh, baterie a TČ ano
-    calculateFVE(5000, true, true);
-  } else if (message.toLowerCase().includes("hledej") || message.toLowerCase().includes("dotace")) {
-    searchWeb(message);
-  } else {
-    askGPT(message);
-  }
+  const response = await fetch("/.netlify/functions/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text })
+  });
 
-  input.value = "";
+  const data = await response.json();
+  addMessage("bot", data.reply);
 }
 
 sendBtn.addEventListener("click", sendMessage);
-input.addEventListener("keypress", (e) => {
+userInput.addEventListener("keypress", e => {
   if (e.key === "Enter") sendMessage();
+});
+
+contactForm.addEventListener("submit", e => {
+  e.preventDefault();
+  alert("Děkujeme, brzy vás budeme kontaktovat s výsledkem výpočtu.");
+  contactForm.reset();
+});
+
+exportCSV.addEventListener("click", () => {
+  const csvContent = calc.exportCSV();
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "vypocet_fve.csv";
+  a.click();
 });
