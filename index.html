@@ -1,71 +1,50 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FVE & Tepelné Čerpadlo Kalkulátor</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>FVE & Tepelné Čerpadlo Kalkulátor</h1>
+  <div class="container">
+    <h1>FVE & Tepelné Čerpadlo Kalkulátor</h1>
+    <form id="calcForm">
+      <label>Město / Adresa:</label>
+      <input type="text" id="location" required />
 
-  <form id="calc-form">
-    <label>Město nebo adresa:
-      <input type="text" id="address" required>
-    </label>
-    <label>Typ domu:
+      <label>Typ domu:</label>
       <select id="houseType" required>
-        <option value="">-- Vyberte --</option>
+        <option value="">Vyberte...</option>
         <option value="rodinný">Rodinný</option>
         <option value="bytový">Bytový</option>
       </select>
-    </label>
-    <label>Roční spotřeba elektřiny (kWh):
-      <input type="number" id="consumption" required>
-    </label>
-    <label>Uvažujete o baterii?
+
+      <label>Roční spotřeba elektřiny (kWh):</label>
+      <input type="number" id="consumption" required />
+
+      <label>Uvažujete o baterii?</label>
       <select id="battery" required>
-        <option value="">-- Vyberte --</option>
         <option value="ano">Ano</option>
         <option value="ne">Ne</option>
       </select>
-    </label>
-    <label>Uvažujete o tepelném čerpadle?
-      <select id="heatpump" required>
-        <option value="">-- Vyberte --</option>
+
+      <label>Uvažujete o tepelném čerpadle?</label>
+      <select id="heatPump" required>
         <option value="ano">Ano</option>
         <option value="ne">Ne</option>
       </select>
-    </label>
 
-    <button type="submit">Spočítat návratnost</button>
-  </form>
+      <label>E-mail (volitelné, pro zaslání reportu):</label>
+      <input type="email" id="email" placeholder="volitelné" />
 
-  <div id="result"></div>
+      <button type="submit">Spočítat návratnost</button>
+    </form>
 
-  <div id="export-section" style="display:none;">
-    <button id="export-csv">Exportovat do CSV</button>
-    <button id="export-txt">Exportovat do TXT</button>
+    <div id="loading" style="display:none;">Počítám...</div>
+    <div id="result"></div>
   </div>
 
-  <h2>Chcete si nechat výsledek poslat e‑mailem?</h2>
-  <form id="contact-form">
-    <label>Jméno:
-      <input type="text" id="name" required>
-    </label>
-    <label>E‑mail:
-      <input type="email" id="email" required>
-    </label>
-    <label>Telefon:
-      <input type="tel" id="phone">
-    </label>
-    <label>Zpráva:
-      <textarea id="message"></textarea>
-    </label>
-    <button type="submit">Odeslat</button>
-  </form>
-
-  <script src="calc.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
