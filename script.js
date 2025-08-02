@@ -1,50 +1,57 @@
-const chatWindow = document.getElementById("chatWindow");
-const userInput = document.getElementById("userInput");
-const sendBtn = document.getElementById("sendBtn");
-const contactForm = document.getElementById("contactForm");
-const exportCSV = document.getElementById("exportCSV");
+const chatWindow = document.getElementById("chat-window");
+const userInput = document.getElementById("user-message");
+const sendBtn = document.getElementById("send-btn");
 
-function addMessage(sender, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("chat-message", sender);
-  msg.innerText = text;
-  chatWindow.appendChild(msg);
+function appendMessage(message, sender = "bot") {
+  const div = document.createElement("div");
+  div.className = sender === "user" ? "user-message" : "bot-message";
+  div.textContent = message;
+  chatWindow.appendChild(div);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-async function sendMessage() {
-  const text = userInput.value.trim();
-  if (!text) return;
-  addMessage("user", text);
+sendBtn.addEventListener("click", async () => {
+  const message = userInput.value.trim();
+  if (!message) return;
+  appendMessage(message, "user");
   userInput.value = "";
 
   const response = await fetch("/.netlify/functions/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: text })
+    body: JSON.stringify({ message }),
   });
 
   const data = await response.json();
-  addMessage("bot", data.reply);
-}
-
-sendBtn.addEventListener("click", sendMessage);
-userInput.addEventListener("keypress", e => {
-  if (e.key === "Enter") sendMessage();
+  if (data.reply) {
+    appendMessage(data.reply, "bot");
+  } else {
+    appendMessage("Chyba při získávání odpovědi.", "bot");
+    console.error(data.error);
+  }
 });
 
-contactForm.addEventListener("submit", e => {
-  e.preventDefault();
-  alert("Děkujeme, brzy vás budeme kontaktovat s výsledkem výpočtu.");
-  contactForm.reset();
+// Export výsledků
+document.getElementById("export-csv").addEventListener("click", () => {
+  const rows = [["Parametr", "Hodnota"]];
+  const results = calculateFVE({ spotreba: 4800, baterie: true, tepelneCerpadlo: true });
+  for (const [key, value] of Object.entries(results)) rows.push([key, value]);
+
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "fve_vypocet.csv";
+  link.click();
 });
 
-exportCSV.addEventListener("click", () => {
-  const csvContent = calc.exportCSV();
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "vypocet_fve.csv";
-  a.click();
+document.getElementById("export-txt").addEventListener("click", () => {
+  const results = calculateFVE({ spotreba: 4800, baterie: true, tepelneCerpadlo: true });
+  let txt = "Výpočet návratnosti FVE, baterie a TČ:\n";
+  for (const [key, value] of Object.entries(results)) txt += `${key}: ${value}\n`;
+
+  const blob = new Blob([txt], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "fve_vypocet.txt";
+  link.click();
 });

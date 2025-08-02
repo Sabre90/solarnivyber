@@ -6,13 +6,11 @@ export async function handler(event) {
 
     const systemPrompt = `
 Jsi expertní asistent na fotovoltaiku, bateriová úložiště a tepelná čerpadla v ČR.
-Dodržuj tato pravidla:
-1. Odpovídej pouze na témata FVE, baterií a TČ v ČR.
-2. Pokud dotaz NENÍ k tématu, odpověz: "Prosím, zůstaňme u výpočtu návratnosti FVE, baterií a TČ v ČR."
-3. Pokud se uživatel ptá na aktuální dotace, ceny nebo výrobce, použij web search k vyhledání informací.
+Odpovídej pouze k tématu. Pokud dotaz není k tématu, odpověz:
+"Prosím, zůstaňme u výpočtu návratnosti FVE, baterií a TČ v ČR."
+Používej web search pro aktuální dotace a ceny.
 `;
 
-    // 1️⃣ Pošleme nejdříve dotaz do OpenAI s možností Web Search
     const resp = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -25,17 +23,19 @@ Dodržuj tato pravidla:
           { role: "system", content: systemPrompt },
           { role: "user", content: message }
         ],
-        tools: [{ type: "web_search" }],  // 🔹 Přidána možnost vyhledávání
+        tools: [{ type: "web_search" }]
       })
     });
 
     const data = await resp.json();
+    if (!data.output_text) {
+      console.error("OpenAI API error:", data);
+      return { statusCode: 500, body: JSON.stringify({ error: data }) };
+    }
 
-    // 2️⃣ Odpověď z modelu
-    const reply = data.output_text || "Chyba při získávání odpovědi.";
-
-    return { statusCode: 200, body: JSON.stringify({ reply }) };
+    return { statusCode: 200, body: JSON.stringify({ reply: data.output_text }) };
   } catch (err) {
+    console.error("Server error:", err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 }

@@ -1,31 +1,28 @@
-const calc = {
-    fvePricePerKwp: 28000,
-    batteryPricePerKwh: 18000,
-    tcPrice: 180000,
-    electricityPrice: 6.5,
+function calculateFVE({ spotreba, baterie, tepelneCerpadlo }) {
+    const kWpNeeded = Math.ceil(spotreba / 1050);
+    const fvePrice = kWpNeeded * 28000;
+    const batterySize = baterie ? kWpNeeded : 0;
+    const batteryPrice = batterySize * 18000;
+    const tcoPrice = tepelneCerpadlo ? 180000 : 0;
   
-    compute({ consumption, battery, tc }) {
-      const kwpNeeded = Math.min(Math.ceil(consumption / 1050), 10);
-      const batterySize = battery ? kwpNeeded : 0;
+    let subsidy = 0;
+    subsidy += Math.min(kWpNeeded, 5) * 10000;
+    if (batterySize > 0) subsidy += batterySize * 10000;
+    if (tepelneCerpadlo) subsidy += 60000 + 100000;
   
-      const fveCost = kwpNeeded * this.fvePricePerKwp;
-      const batteryCost = batterySize * this.batteryPricePerKwh;
-      const tcCost = tc ? this.tcPrice : 0;
+    const totalInvestment = fvePrice + batteryPrice + tcoPrice - subsidy;
+    const annualSaving = Math.min(spotreba, kWpNeeded * 1050) * 6.5;
+    const payback = Math.round(totalInvestment / annualSaving);
   
-      const fveSubsidy = Math.min(kwpNeeded, 5) * 10000;
-      const batterySubsidy = battery ? batterySize * 10000 : 0;
-      const bonus = tc ? 60000 : 30000;
-  
-      const totalSubsidy = fveSubsidy + batterySubsidy + bonus + (tc ? 100000 : 0);
-      const totalCost = fveCost + batteryCost + tcCost - totalSubsidy;
-  
-      const yearlySaving = Math.min(consumption, kwpNeeded * 1050) * this.electricityPrice;
-      const returnYears = Math.max(1, (totalCost / yearlySaving).toFixed(1));
-  
-      return { kwpNeeded, batterySize, fveCost, batteryCost, tcCost, totalSubsidy, totalCost, yearlySaving, returnYears };
-    },
-  
-    exportCSV() {
-      return "Sloupec;Hodnota\nFVE výkon;kWp\nRoční úspora;Kč\nNávratnost;Roky";
-    }
-  };
+    return {
+      kWpNeeded,
+      batterySize,
+      fvePrice,
+      batteryPrice,
+      tcoPrice,
+      subsidy,
+      totalInvestment,
+      annualSaving,
+      payback
+    };
+  }
