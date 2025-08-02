@@ -1,41 +1,59 @@
-import fetch from "node-fetch";
+// netlify/functions/chat.js
+import fetch from 'node-fetch';
 
-export async function handler(event) {
+export async function handler(event, context) {
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, body: "Method Not Allowed" };
+  }
+
   try {
-    const { message } = JSON.parse(event.body);
+    const { message, history } = JSON.parse(event.body);
 
-    const systemPrompt = `
-Jsi expertní asistent na fotovoltaiku, bateriová úložiště a tepelná čerpadla v ČR.
-Odpovídej pouze k tématu. Pokud dotaz není k tématu, odpověz:
-"Prosím, zůstaňme u výpočtu návratnosti FVE, baterií a TČ v ČR."
-Používej web search pro aktuální dotace a ceny.
-`;
-
-    const resp = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1",
-        input: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: message }
-        ],
-        tools: [{ type: "web_search" }]
-      })
-    });
-
-    const data = await resp.json();
-    if (!data.output_text) {
-      console.error("OpenAI API error:", data);
-      return { statusCode: 500, body: JSON.stringify({ error: data }) };
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return { statusCode: 500, body: "Missing OpenAI API key" };
     }
 
-    return { statusCode: 200, body: JSON.stringify({ reply: data.output_text }) };
-  } catch (err) {
-    console.error("Server error:", err);
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-2025-04-14",
+        input: [
+          ...(history || []),
+          { role: "user", content: message }
+        ],
+        max_output_tokens: 500,
+        temperature: 0.7,
+      }),
+    });
+
+    const data = await response.json();
+
+    // Zpracování chyb OpenAI
+    if (!response.ok || data.error) {
+      console.error("OpenAI API error:", data);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: data.error || "OpenAI API error" }),
+      };
+    }
+
+    // Extrakce odpovědi z nového formátu OpenAI Responses API
+    const reply =
+      data?.output?.[0]?.content?.[0]?.text ||
+      "Chyba: Nepodařilo se zpracovat odpověď.";
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ reply }),
+    };
+
+  } catch (error) {
+    console.error("Function error:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 }
