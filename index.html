@@ -3,40 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FVE Chat Asistent</title>
+  <title>FVE & Tepelné Čerpadlo Kalkulátor</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
-    <h1>⚡ FVE Chat Asistent</h1>
-    <p class="subtitle">Zeptejte se na fotovoltaiku a získejte rychlý výpočet</p>
+  <div class="chat-container">
+    <header class="chat-header">
+      <h1>⚡ FVE & TČ Kalkulátor</h1>
+      <p>Výpočet návratnosti fotovoltaiky, baterií a tepelných čerpadel v ČR</p>
+    </header>
 
-    <!-- Inspirace dotazů -->
-    <div class="examples">
-      <p>💡 Vyzkoušejte například:</p>
-      <button class="example-btn">Jak velkou FVE potřebuji pro dům s roční spotřebou 6 MWh?</button>
-      <button class="example-btn">Za jak dlouho se mi vrátí investice do 8 kWp?</button>
-      <button class="example-btn">Kolik panelů potřebuji na střechu 120 m²?</button>
-    </div>
+    <main class="chat-main" id="chat-box"></main>
 
-    <!-- Chatbox -->
-    <div id="chatBox" class="chat-box"></div>
-
-    <!-- Vstup uživatele -->
-    <div class="input-container">
-      <input type="text" id="userInput" placeholder="Zadejte dotaz k FVE..." />
-      <button id="sendBtn">Odeslat</button>
-    </div>
-
-    <!-- Formulář pro uložení kontaktu -->
-    <h2>📩 Nechte nám kontakt</h2>
-    <form id="contactForm">
-      <input type="email" id="email" placeholder="Váš e-mail" required>
-      <input type="tel" id="phone" placeholder="Telefon" required>
-      <textarea id="result" placeholder="Výsledek výpočtu (volitelné)"></textarea>
-      <button type="submit">Odeslat</button>
-    </form>
-    <p id="status"></p>
+    <footer class="chat-footer">
+      <input type="text" id="chat-input" placeholder="Zeptejte se na FVE, baterie a TČ...">
+      <button id="send-btn">➤</button>
+    </footer>
   </div>
 
   <script src="script.js"></script>

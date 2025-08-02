@@ -1,85 +1,135 @@
-const chatBox = document.getElementById('chatBox');
-const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-const exampleBtns = document.querySelectorAll('.example-btn');
+// =========================
+// UI Elements
+// =========================
+const chatBox = document.getElementById("chat-box");
+const input = document.getElementById("chat-input");
+const sendBtn = document.getElementById("send-btn");
+const starters = [
+  "Spočítej návratnost FVE s baterií a TČ pro rodinný dům.",
+  "Jaká je aktuální dotace na fotovoltaiku a baterii?",
+  "Kolik ušetřím ročně, když budu mít fotovoltaiku 5 kWp?",
+  "Chci zjistit, jestli se mi vyplatí fotovoltaika na domě v mém městě."
+];
 
-// Funkce pro přidání zprávy do chatu
-function addMessage(message, sender = 'bot') {
-  const div = document.createElement('div');
-  div.classList.add('chat-message', sender);
-  div.textContent = message;
+// Při načtení vložíme startovní návrhy do UI
+window.addEventListener("DOMContentLoaded", () => {
+  starters.forEach((s) => appendMessage(s, "starter"));
+});
+
+// =========================
+// Helpers
+// =========================
+function appendMessage(text, sender = "user") {
+  const div = document.createElement("div");
+  div.className = sender === "user" ? "msg user" : sender === "bot" ? "msg bot" : "msg starter";
+  div.textContent = text;
+  div.addEventListener("click", () => {
+    if (sender === "starter") {
+      input.value = text;
+      sendMessage();
+    }
+  });
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Odeslání dotazu na serverless funkci
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
-  addMessage(message, 'user');
-  userInput.value = '';
+// =========================
+// API Calls
+// =========================
 
-  addMessage('⏳ Počkejte, počítám...', 'bot');
+// Volání GPT
+async function askGPT(prompt) {
+  appendMessage(prompt, "user");
+  appendMessage("⏳ Počkejte na odpověď...", "bot");
 
   try {
-    const response = await fetch('/.netlify/functions/calc', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+    const res = await fetch("/.netlify/functions/calc", {
+      method: "POST",
+      body: JSON.stringify({ action: "ask", data: { prompt } }),
     });
-    const data = await response.json();
-
-    chatBox.lastChild.remove(); // odstranit "Počkejte..."
-    if (data.reply) {
-      addMessage(data.reply, 'bot');
-      document.getElementById('result').value = data.reply; // předvyplní výsledek
-    } else {
-      addMessage('⚠️ Chyba při výpočtu', 'bot');
-    }
-  } catch (e) {
-    chatBox.lastChild.remove();
-    addMessage('⚠️ Chyba při výpočtu', 'bot');
+    const text = await res.text();
+    const lastBot = chatBox.querySelector(".msg.bot:last-child");
+    if (lastBot) lastBot.textContent = text;
+  } catch (err) {
+    const lastBot = chatBox.querySelector(".msg.bot:last-child");
+    if (lastBot) lastBot.textContent = "⚠️ Chyba při dotazu na GPT.";
   }
 }
 
-// Kliknutí na inspiraci
-exampleBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    userInput.value = btn.textContent;
-    sendMessage();
-  });
-});
+// Výpočet FVE
+async function calculateFVE(spotreba, baterie, tc) {
+  appendMessage("📊 Počítám návratnost FVE...", "bot");
 
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keypress', e => {
-  if (e.key === 'Enter') sendMessage();
-});
+  try {
+    const res = await fetch("/.netlify/functions/calc", {
+      method: "POST",
+      body: JSON.stringify({ action: "calculate", data: { spotreba, baterie, tc } }),
+    });
+    const result = await res.json();
 
-// ----------------------
-// Odeslání do Google Forms
-// ----------------------
-document.getElementById('contactForm').addEventListener('submit', function (e) {
-  e.preventDefault();
+    appendMessage(
+      `✅ Doporučený výkon FVE: ${result.kWp} kWp
+🔋 Baterie: ${result.baterieKWh} kWh
+💰 Investice po dotacích: ${result.investice.toLocaleString()} Kč
+📉 Roční úspora: ${result.rocniUspora.toLocaleString()} Kč
+⏱ Návratnost: ${result.navratnost} let
+💶 Dotace NZÚ: ${result.dotace.toLocaleString()} Kč`,
+      "bot"
+    );
+  } catch (err) {
+    appendMessage("⚠️ Chyba při výpočtu návratnosti.", "bot");
+  }
+}
 
-  const result = document.getElementById('result').value;
-  const email = document.getElementById('email').value;
-  const phone = document.getElementById('phone').value;
+// Web Search
+async function searchWeb(query) {
+  appendMessage(`🔎 Hledám na webu: "${query}"`, "user");
+  appendMessage("⏳ Vyhledávání...", "bot");
 
-  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSeZjNJC75-7QZP9eurHY63wPJADLQhtRmKykErmgzEVNjfrlQ/formResponse";
+  try {
+    const res = await fetch("/.netlify/functions/calc", {
+      method: "POST",
+      body: JSON.stringify({ action: "websearch", data: { query } }),
+    });
+    const links = await res.json();
+    const lastBot = chatBox.querySelector(".msg.bot:last-child");
+    if (lastBot) {
+      if (links.length === 0) {
+        lastBot.textContent = "Nenalezeny žádné výsledky.";
+      } else {
+        lastBot.innerHTML = "🌐 Nalezené odkazy:<br>" +
+          links
+            .map((l) => `<a href="${l.FirstURL}" target="_blank">${l.Text}</a>`)
+            .join("<br>");
+      }
+    }
+  } catch (err) {
+    const lastBot = chatBox.querySelector(".msg.bot:last-child");
+    if (lastBot) lastBot.textContent = "⚠️ Chyba při vyhledávání.";
+  }
+}
 
-  const formData = new FormData();
-  formData.append('entry.400294580', result);  // Výpočet
-  formData.append('entry.1456344775', email);  // Email
-  formData.append('entry.1786917849', phone);  // Telefon
+// =========================
+// Sending messages
+// =========================
+async function sendMessage() {
+  const message = input.value.trim();
+  if (!message) return;
 
-  fetch(formURL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: formData
-  }).then(() => {
-    document.getElementById('status').innerText = "✅ Děkujeme! Specialista vás brzy kontaktuje.";
-    document.getElementById('contactForm').reset();
-  }).catch(() => {
-    document.getElementById('status').innerText = "⚠️ Nepodařilo se odeslat, zkuste znovu.";
-  });
+  // Zjistíme, zda je to příkaz pro výpočet
+  if (message.toLowerCase().includes("spočítej") || message.toLowerCase().includes("návratnost")) {
+    // Defaultní demo: spotřeba 5000 kWh, baterie a TČ ano
+    calculateFVE(5000, true, true);
+  } else if (message.toLowerCase().includes("hledej") || message.toLowerCase().includes("dotace")) {
+    searchWeb(message);
+  } else {
+    askGPT(message);
+  }
+
+  input.value = "";
+}
+
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
 });
