@@ -1,28 +1,39 @@
-function calculateFVE({ spotreba, baterie, tepelneCerpadlo }) {
-    const kWpNeeded = Math.ceil(spotreba / 1050);
-    const fvePrice = kWpNeeded * 28000;
-    const batterySize = baterie ? kWpNeeded : 0;
-    const batteryPrice = batterySize * 18000;
-    const tcoPrice = tepelneCerpadlo ? 180000 : 0;
+function calculateFVE(consumption, battery, heatpump) {
+    const kWhPerKwP = 1050;
+    const pricePerKwP = 28000;
+    const priceBatteryKWh = 18000;
+    const priceHeatpump = 180000;
+    const priceElectricity = 6.5;
   
+    // Doporučený výkon FVE podle spotřeby
+    const fvePower = Math.min(5, Math.ceil(consumption / kWhPerKwP));
+    const batterySize = battery === 'ano' ? fvePower : 0;
+  
+    // Ceny
+    const fvePrice = fvePower * pricePerKwP;
+    const batteryPrice = batterySize * priceBatteryKWh;
+    const heatpumpPrice = heatpump === 'ano' ? priceHeatpump : 0;
+  
+    // Dotace
     let subsidy = 0;
-    subsidy += Math.min(kWpNeeded, 5) * 10000;
-    if (batterySize > 0) subsidy += batterySize * 10000;
-    if (tepelneCerpadlo) subsidy += 60000 + 100000;
+    subsidy += Math.min(fvePower, 5) * 10000;
+    subsidy += batterySize * 10000;
+    if (heatpump === 'ano') subsidy += 60000 + 100000;
+    else subsidy += 30000;
   
-    const totalInvestment = fvePrice + batteryPrice + tcoPrice - subsidy;
-    const annualSaving = Math.min(spotreba, kWpNeeded * 1050) * 6.5;
-    const payback = Math.round(totalInvestment / annualSaving);
+    // Roční úspora
+    const yearlySaving = Math.min(fvePower * kWhPerKwP, consumption) * priceElectricity;
+  
+    // Celková investice
+    const totalCost = fvePrice + batteryPrice + heatpumpPrice - subsidy;
+    const payback = totalCost / yearlySaving;
   
     return {
-      kWpNeeded,
+      fvePower,
       batterySize,
-      fvePrice,
-      batteryPrice,
-      tcoPrice,
-      subsidy,
-      totalInvestment,
-      annualSaving,
-      payback
+      totalCost,
+      yearlySaving,
+      payback,
+      subsidy
     };
   }

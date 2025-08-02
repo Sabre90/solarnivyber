@@ -7,37 +7,63 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>FVE & Tepelné Čerpadlo Kalkulátor</h1>
-      <p>Vypočítejte návratnost fotovoltaiky, baterií a tepelných čerpadel v ČR</p>
-    </header>
+  <h1>FVE & Tepelné Čerpadlo Kalkulátor</h1>
 
-    <main>
-      <div class="chat-container">
-        <div id="chat-window"></div>
+  <form id="calc-form">
+    <label>Město nebo adresa:
+      <input type="text" id="address" required>
+    </label>
+    <label>Typ domu:
+      <select id="houseType" required>
+        <option value="">-- Vyberte --</option>
+        <option value="rodinný">Rodinný</option>
+        <option value="bytový">Bytový</option>
+      </select>
+    </label>
+    <label>Roční spotřeba elektřiny (kWh):
+      <input type="number" id="consumption" required>
+    </label>
+    <label>Uvažujete o baterii?
+      <select id="battery" required>
+        <option value="">-- Vyberte --</option>
+        <option value="ano">Ano</option>
+        <option value="ne">Ne</option>
+      </select>
+    </label>
+    <label>Uvažujete o tepelném čerpadle?
+      <select id="heatpump" required>
+        <option value="">-- Vyberte --</option>
+        <option value="ano">Ano</option>
+        <option value="ne">Ne</option>
+      </select>
+    </label>
 
-        <div class="user-input">
-          <input type="text" id="user-message" placeholder="Napište dotaz k FVE, baterii nebo TČ...">
-          <button id="send-btn">Odeslat</button>
-        </div>
-      </div>
+    <button type="submit">Spočítat návratnost</button>
+  </form>
 
-      <div class="contact-form">
-        <h2>Zanechte nám kontakt</h2>
-        <input type="text" id="user-name" placeholder="Vaše jméno">
-        <input type="email" id="user-email" placeholder="Váš e-mail">
-        <input type="tel" id="user-phone" placeholder="Telefon (nepovinné)">
-        <textarea id="user-note" placeholder="Poznámka k vašemu projektu"></textarea>
-        <button id="send-contact">Odeslat detaily</button>
-      </div>
+  <div id="result"></div>
 
-      <div class="export-buttons">
-        <button id="export-csv">Exportovat výsledky do CSV</button>
-        <button id="export-txt">Exportovat výsledky do TXT</button>
-      </div>
-    </main>
+  <div id="export-section" style="display:none;">
+    <button id="export-csv">Exportovat do CSV</button>
+    <button id="export-txt">Exportovat do TXT</button>
   </div>
+
+  <h2>Chcete si nechat výsledek poslat e‑mailem?</h2>
+  <form id="contact-form">
+    <label>Jméno:
+      <input type="text" id="name" required>
+    </label>
+    <label>E‑mail:
+      <input type="email" id="email" required>
+    </label>
+    <label>Telefon:
+      <input type="tel" id="phone">
+    </label>
+    <label>Zpráva:
+      <textarea id="message"></textarea>
+    </label>
+    <button type="submit">Odeslat</button>
+  </form>
 
   <script src="calc.js"></script>
   <script src="script.js"></script>

@@ -1,59 +1,41 @@
-// netlify/functions/chat.js
 import fetch from 'node-fetch';
 
-export async function handler(event, context) {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
-
+export async function handler(event) {
   try {
-    const { message, history } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return { statusCode: 500, body: "Missing OpenAI API key" };
-    }
+    const prompt = `
+Uživatel zadal:
+- Adresa: ${body.address}
+- Typ domu: ${body.houseType}
+- Roční spotřeba: ${body.consumption} kWh
+- Baterie: ${body.battery}
+- Tepelné čerpadlo: ${body.heatpump}
+
+Spočítej návratnost FVE a doporuč výrobce panelů a baterií. Dodržuj český jazyk.
+`;
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "gpt-4.1-2025-04-14",
-        input: [
-          ...(history || []),
-          { role: "user", content: message }
-        ],
-        max_output_tokens: 500,
-        temperature: 0.7,
+        input: prompt,
+        tools: [{ type: "web_search_preview", search_context_size: "medium" }]
       }),
     });
 
     const data = await response.json();
-
-    // Zpracování chyb OpenAI
-    if (!response.ok || data.error) {
-      console.error("OpenAI API error:", data);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: data.error || "OpenAI API error" }),
-      };
-    }
-
-    // Extrakce odpovědi z nového formátu OpenAI Responses API
-    const reply =
-      data?.output?.[0]?.content?.[0]?.text ||
-      "Chyba: Nepodařilo se zpracovat odpověď.";
+    const output = data.output?.[0]?.content?.[0]?.text || "Chyba při generování odpovědi.";
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply }),
+      body: JSON.stringify({ output }),
     };
-
-  } catch (error) {
-    console.error("Function error:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 }
